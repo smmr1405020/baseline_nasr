@@ -101,7 +101,7 @@ def get_trajectories(start_point, end_point, no_times, no_beams, no_expansions, 
         if len(rtraj) >= 3:
             gotBefore = False
             for j in range(len(ans_traj)):
-                if isSame(ans_traj[j], rtraj):
+                if metric.calc_F1(ans_traj[j], rtraj) > 0.8:
                     gotBefore = True
                     break
             if not gotBefore:
