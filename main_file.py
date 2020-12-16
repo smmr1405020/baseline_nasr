@@ -1,6 +1,6 @@
 import args_kdiverse
 
-args_kdiverse.dataset_ix = 2
+args_kdiverse.dataset_ix = 3
 
 import kfold_dataset_generator
 
