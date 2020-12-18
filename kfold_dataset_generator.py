@@ -115,7 +115,7 @@ def generate_ds_kfold_parts(KFOLD):
                 to_traj_csv_train.append(traj_times[j])
                 to_traj_csv_train.append([users[j], traj_ids[j]])
 
-        with open("processed_data/" + embedding_name + '_set_part_' + str(k) + '.csv', mode='w',
+        with open("processed_data/" + embedding_name + '_set_part_' + str(k) + '.csv', mode='w+',
                   newline="") as csv_file:
             csv_file_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             for row in to_traj_csv_train:
@@ -136,7 +136,7 @@ def generate_train_test_data(test_index, KFOLD):
             for row in csv_reader:
                 train_lines.append(row)
 
-    with open("processed_data/" + embedding_name + '_train_set.csv', mode='w', newline="") as csv_file:
+    with open("processed_data/" + embedding_name + '_train_set.csv', mode='w+', newline="") as csv_file:
         csv_file_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in train_lines:
             csv_file_writer.writerow(row)
@@ -147,7 +147,7 @@ def generate_train_test_data(test_index, KFOLD):
         for row in csv_reader:
             test_lines.append(row)
 
-    with open("processed_data/" + embedding_name + '_test_set.csv', mode='w', newline="") as csv_file:
+    with open("processed_data/" + embedding_name + '_test_set.csv', mode='w+', newline="") as csv_file:
         csv_file_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in test_lines:
             csv_file_writer.writerow(row)

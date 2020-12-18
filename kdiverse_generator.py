@@ -126,7 +126,7 @@ def write_to_file(dictionary, directory):
             write_lines.append(v[i])
         write_lines.append([-1])
 
-    with open(file_path, mode='w', newline="") as to_csv_file:
+    with open(file_path, mode='w+', newline="") as to_csv_file:
         csv_file_writer = csv.writer(to_csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in write_lines:
             csv_file_writer.writerow(row)
@@ -143,7 +143,7 @@ def write_distmat_to_file():
     for i in range(total_pois):
         write_lines.append(list(data_generator.poi_poi_distance_matrix[i]))
 
-    with open(file_path, mode='w', newline="") as to_csv_file:
+    with open(file_path, mode='w+', newline="") as to_csv_file:
         csv_file_writer = csv.writer(to_csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in write_lines:
             csv_file_writer.writerow(row)
