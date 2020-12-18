@@ -4,7 +4,7 @@ args_kdiverse.dataset_ix = 7
 
 import kfold_dataset_generator
 
-fold_no = 3
+fold_no = 1
 kfold_dataset_generator.generate_ds_kfold_parts(5)
 kfold_dataset_generator.generate_train_test_data(fold_no, 5)
 print("Fold No. : "+str(fold_no))

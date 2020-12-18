@@ -1,3 +1,7 @@
+import csv
+import os
+
+import kfold_dataset_generator
 import st_attention_network
 import torch
 import numpy as np
@@ -17,7 +21,7 @@ def get_prob(input_seq):
     prob = torch.reshape(prob, [len(input_seq), -1])
     prob = torch.softmax(prob, dim=-1)
     prob = prob.cpu().detach().numpy()
-    return prob[-1].reshape(1, -1)
+    return prob[-1].reshape(1, -1) *(1 / (0.75) ** len(input_seq))
 
 
 def get_top_expansions(input_seq, input_seq_prob, no_of_expansions, end_point, candidate_seq_tuples):
@@ -112,6 +116,42 @@ def get_trajectories(start_point, end_point, no_times, no_beams, no_expansions, 
     return ans_traj
 
 
+def write_to_file(dictionary, directory):
+    file_path = os.path.join(directory, str(data_generator.dat_suffix[data_generator.dat_ix]) + "_" +
+                             str(kfold_dataset_generator.mytest_index)) + '.csv'
+    write_lines = []
+
+    for k, v in dictionary.items():
+        for i in range(len(v)):
+            write_lines.append(v[i])
+        write_lines.append([-1])
+
+    with open(file_path, mode='w', newline="") as to_csv_file:
+        csv_file_writer = csv.writer(to_csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for row in write_lines:
+            csv_file_writer.writerow(row)
+
+    return
+
+
+def write_distmat_to_file():
+    file_path = os.path.join('gtset_nasr',
+                             str(data_generator.dat_suffix[data_generator.dat_ix]) + "_" +
+                             str(kfold_dataset_generator.mytest_index) + "_distmat") + '.csv'
+    total_pois = data_generator.poi_poi_distance_matrix.shape[0]
+    write_lines = [[total_pois]]
+    for i in range(total_pois):
+        write_lines.append(list(data_generator.poi_poi_distance_matrix[i]))
+
+    with open(file_path, mode='w', newline="") as to_csv_file:
+        csv_file_writer = csv.writer(to_csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for row in write_lines:
+            csv_file_writer.writerow(row)
+
+    return
+
+
+
 def generate_result(load_from_file, K):
     st_attention_network.get_lstm_model(load_from_file)
 
@@ -131,18 +171,24 @@ def generate_result(load_from_file, K):
     total_traj_curr = 0
     count = 1
 
+    all_gtset = dict()
+    all_recset = dict()
+
     for k, v in data_generator.test_data_dicts_vi[0].items():
         str_k = str(k).split("-")
         poi_start = int(str_k[0])
         poi_end = int(str_k[1])
 
-        all_traj = get_trajectories(poi_start, poi_end, 13, max(2, K) * K, 10 * K, K)
+        all_traj = get_trajectories(poi_start, poi_end, 13, 4 * K, 4 * K, K)
 
         print("{}/{}".format(count, len(data_generator.test_data_dicts_vi[0])))
         count += 1
         print([poi_start, poi_end])
         print(v)
         print(all_traj)
+
+        all_gtset[k] = v
+        all_recset[k] = all_traj
 
         total_score_curr_f1 += metric.tot_f1_evaluation(v, data_generator.test_data_dicts_vi[2][k], all_traj)
         total_score_curr_pf1 += metric.tot_pf1_evaluation(v, data_generator.test_data_dicts_vi[2][k], all_traj)
@@ -167,6 +213,10 @@ def generate_result(load_from_file, K):
     avg_intra_f1 = np.average(np.array(all_intra_f1_scores))
 
     print("F1: " + str(avg_f1) + " PF1: " + str(avg_pf1) + " IOU: " + str(avg_iou) + " IF1: " + str(avg_intra_f1))
+
+    write_to_file(all_gtset, 'gtset_nasr')
+    write_to_file(all_recset, 'recset_nasr')
+    write_distmat_to_file()
 
     #     total_score_curr += metric.f1_evaluation(v, data_generator.test_data_dicts_vi[2][k], all_traj)
     #     total_traj_curr += np.sum(data_generator.test_data_dicts_vi[2][k])
