@@ -116,9 +116,15 @@ def get_trajectories(start_point, end_point, no_times, no_beams, no_expansions, 
     return ans_traj
 
 
-def write_to_file(dictionary, directory):
-    file_path = os.path.join(directory, str(data_generator.dat_suffix[data_generator.dat_ix]) + "_" +
-                             str(kfold_dataset_generator.mytest_index)) + '.csv'
+def write_to_file(dictionary, directory, isFreq = False):
+
+    if not isFreq:
+        file_path = os.path.join(directory, str(data_generator.dat_suffix[data_generator.dat_ix]) + "_" +
+                                 str(kfold_dataset_generator.mytest_index)) + '.csv'
+    else:
+        file_path = os.path.join(directory, str(data_generator.dat_suffix[data_generator.dat_ix]) + "_" +
+                                 str(kfold_dataset_generator.mytest_index)) + '_freq.csv'
+
     write_lines = []
 
     for k, v in dictionary.items():
@@ -173,6 +179,7 @@ def generate_result(load_from_file, K):
 
     all_gtset = dict()
     all_recset = dict()
+    all_gtfreqset = dict()
 
     for k, v in data_generator.test_data_dicts_vi[0].items():
         str_k = str(k).split("-")
@@ -189,6 +196,7 @@ def generate_result(load_from_file, K):
 
         all_gtset[k] = v
         all_recset[k] = all_traj
+        all_gtfreqset[k] = [data_generator.test_data_dicts_vi[2][k]]
 
         total_score_curr_f1 += metric.tot_f1_evaluation(v, data_generator.test_data_dicts_vi[2][k], all_traj)
         total_score_curr_pf1 += metric.tot_pf1_evaluation(v, data_generator.test_data_dicts_vi[2][k], all_traj)
@@ -215,6 +223,7 @@ def generate_result(load_from_file, K):
     print("F1: " + str(avg_f1) + " PF1: " + str(avg_pf1) + " IOU: " + str(avg_iou) + " IF1: " + str(avg_intra_f1))
 
     write_to_file(all_gtset, 'gtset_nasr')
+    write_to_file(all_gtfreqset, 'gtset_nasr',isFreq=True)
     write_to_file(all_recset, 'recset_nasr')
     write_distmat_to_file()
 

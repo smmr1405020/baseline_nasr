@@ -1,6 +1,12 @@
+import os
+if not os.path.exists('gtset_nasr'):
+    os.mkdir('gtset_nasr')
+if not os.path.exists('recset_nasr'):
+    os.mkdir('recset_nasr')
+
 import args_kdiverse
 
-args_kdiverse.dataset_ix = 7
+args_kdiverse.dataset_ix = 2
 
 import kfold_dataset_generator
 
