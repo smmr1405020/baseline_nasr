@@ -60,34 +60,6 @@ def calc_pairsF1(y, y_hat):
     return float(F1)
 
 
-def calc_EDT(y, y_hat):
-    if len(y) == 0:
-        return len(y_hat)
-    elif len(y_hat) == 0:
-        return len(y)
-    else:
-        if y[-1] == y_hat[-1]:
-            return calc_EDT(y[:-1], y_hat[:-1])
-        else:
-            return 1 + min(min(calc_EDT(y, y_hat[:-1]), calc_EDT(y[:-1], y_hat)), calc_EDT(y[:-1], y_hat[:-1]))
-
-
-def calc_pairsF12(y, y_hat):
-    f1 = 0
-    for i in range(len(y)):
-        if y[i] == y_hat[i]:
-            f1 += 1
-    return float(float(f1) / float(len(y)))  # float type
-
-
-def popularity_metric_original(traj_rec, pois_freq):
-    sum_pop = 0
-    for i in range(len(traj_rec)):
-        sum_pop += pois_freq[traj_rec[i]]
-
-    return sum_pop
-
-
 def popularity_metric(traj_rec, poi_pairs_frequency):
     nr = len(traj_rec)
 
@@ -118,17 +90,6 @@ def popularity_K_traj(trajectories, poi_pairs_frequency):
     return pop
 
 
-def likability_score(GT_set, recommended_set):
-    scores = []
-    for i in range(len(GT_set)):
-        max_score = max([calc_F1(GT_set[i], rec_traj) for rec_traj in recommended_set])
-        scores.append(max_score)
-    sorted_scores = sorted(scores, reverse=True)
-    considered_no_of_scores = min(len(GT_set), len(recommended_set))
-    # print(sorted_scores[:considered_no_of_scores])
-    return np.average(sorted_scores[:considered_no_of_scores])
-
-
 def likability_score_3(GT_set, GT_freq, recommended_set):
     scores = []
     for i in range(len(GT_set)):
@@ -156,15 +117,6 @@ def pairsf1_evaluation(GT_set, GT_freq, recommended_set):
     return total_score
 
 
-def edt_evaluation(GT_set, GT_freq, recommended_set):
-    total_score = 0
-
-    for i in range(len(GT_set)):
-        total_score += calc_EDT(GT_set[i], recommended_set[0]) * GT_freq[i]
-
-    return total_score
-
-
 def total_f1_evaluation(route, recommended_set):
     total_score = 0
     for i in range(len(recommended_set)):
@@ -173,13 +125,23 @@ def total_f1_evaluation(route, recommended_set):
     return total_score
 
 
+# def tot_f1_evaluation(GT_set, GT_freq, recommended_set):
+#     total_score = 0
+#
+#     for i in range(len(GT_set)):
+#         for j in range(len(recommended_set)):
+#             total_score += calc_F1(GT_set[i], recommended_set[j]) * GT_freq[i]
+#
+#     return
+
 def tot_f1_evaluation(GT_set, GT_freq, recommended_set):
     total_score = 0
-
+    scores = []
     for i in range(len(GT_set)):
         for j in range(len(recommended_set)):
+            scores = scores + [calc_F1(GT_set[i], recommended_set[j])] * GT_freq[i]
             total_score += calc_F1(GT_set[i], recommended_set[j]) * GT_freq[i]
-
+    #print(scores)
     return total_score
 
 
@@ -193,14 +155,6 @@ def tot_pf1_evaluation(GT_set, GT_freq, recommended_set):
     return total_score
 
 
-def tot_edt_evaluation(GT_set, GT_freq, recommended_set):
-    total_score = 0
-
-    for i in range(len(GT_set)):
-        for j in range(len(recommended_set)):
-            total_score += calc_EDT(GT_set[i], recommended_set[j]) * GT_freq[i]
-
-    return total_score
 
 
 def coverage_iou(GT_set, rec_set):
@@ -218,10 +172,11 @@ def coverage_iou(GT_set, rec_set):
 
     return ratio
 
-def intra_F1(set):
+
+def intra_div_F1(set):
     div_scores = []
     for i in range(len(set)):
-        for j in range(i+1,len(set)):
-            div_scores.append(1-calc_F1(set[i],set[j]))
+        for j in range(i + 1, len(set)):
+            div_scores.append(1 - calc_F1(set[i], set[j]))
 
     return np.average(np.array(div_scores))

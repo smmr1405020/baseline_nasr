@@ -128,12 +128,13 @@ def get_trajectories(start_point, end_point, no_times, no_beams, NO_OF_DIVERSE_T
     return ans_traj
 
 
-def generate_result(load_from_file, K):
+def generate_result(load_from_file, K, N_min, N_max):
     st_attention_network.get_lstm_model(load_from_file)
 
     total_score_curr_f1 = 0
     total_score_curr_pf1 = 0
     total_score_likability = 0
+    total_score_intra_div_f1 = 0
 
     total_traj_curr = 0
     count = 1
@@ -151,7 +152,7 @@ def generate_result(load_from_file, K):
         no_times = len(data_generator.vocab_to_int) - 4
 
         all_traj = get_trajectories(poi_start, poi_end, no_times=no_times, no_beams=4 * K,
-                                    NO_OF_DIVERSE_TRAJECTORIES=K, eligibility_div=0.3, N_min=10, N_max=10)
+                                    NO_OF_DIVERSE_TRAJECTORIES=K, eligibility_div=0.3, N_min=5, N_max=5)
 
         print("{}/{}".format(count, len(data_generator.query_dict_trajectory_test)))
         count += 1
@@ -173,32 +174,40 @@ def generate_result(load_from_file, K):
         total_score_likability += metric.likability_score_3(v, data_generator.query_dict_freq_test[k], all_traj)
         total_score_curr_f1 += metric.tot_f1_evaluation(v, data_generator.query_dict_freq_test[k], all_traj)
         total_score_curr_pf1 += metric.tot_pf1_evaluation(v, data_generator.query_dict_freq_test[k], all_traj)
+        total_score_intra_div_f1 += metric.intra_div_F1(all_traj)
 
         total_traj_curr += np.sum(data_generator.query_dict_freq_test[k]) * len(all_traj)
-        # print(total_traj_curr)
 
         avg_likability = total_score_likability / (count - 1)
+        avg_div = total_score_intra_div_f1 / (count - 1)
         avg_f1 = total_score_curr_f1 / total_traj_curr
         avg_pf1 = total_score_curr_pf1 / total_traj_curr
 
-        print("Avg. upto now: Likability: " + str(avg_likability) + " F1: " + str(avg_f1) + " PF1: " + str(avg_pf1))
+        print("Avg. upto now: Likability: " + str(avg_likability) + " F1: " + str(avg_f1) + " PF1: " + str(avg_pf1)
+              + " Div: " + str(avg_div))
 
     print("\n")
     print("Final Score - With K = {}".format(K))
     avg_likability = total_score_likability / (count - 1)
+    avg_div = total_score_intra_div_f1 / (count - 1)
     avg_f1 = total_score_curr_f1 / total_traj_curr
     avg_pf1 = total_score_curr_pf1 / total_traj_curr
 
-    print("Likability: " + str(avg_likability) + " F1: " + str(avg_f1) + " PF1: " + str(avg_pf1))
+    print("Likability: " + str(avg_likability) + " F1: " + str(avg_f1) + " PF1: " + str(avg_pf1)
+          + " Div: " + str(avg_div))
 
-    write_to_file(all_recset, 'recset_nasr')
+    write_to_file(all_recset, 'recset_nasr', N_min=N_min, N_max=N_max)
+
+    return
 
 
-def write_to_file(dictionary, directory, isFreq=False):
+def write_to_file(dictionary, directory, N_min, N_max, isFreq=False):
     if not isFreq:
-        file_path = os.path.join(directory, str(data_generator.embedding_name)) + "_" + str(args_kdiverse.test_index) + '.csv'
+        file_path = os.path.join(directory, str(data_generator.embedding_name)) + "_" + str(
+            args_kdiverse.test_index) + "_" + str(N_min) + "_" + str(N_max) + '.csv'
     else:
-        file_path = os.path.join(directory, str(data_generator.embedding_name)) + "_" + str(args_kdiverse.test_index) + '_freq.csv'
+        file_path = os.path.join(directory, str(data_generator.embedding_name)) + "_" + str(
+            args_kdiverse.test_index) + '_freq.csv'
 
     write_lines = []
 
