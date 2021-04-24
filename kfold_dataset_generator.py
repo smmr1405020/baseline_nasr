@@ -14,8 +14,6 @@ np.random.seed(1234567890)
 pp = PrettyPrinter(indent=4, width=250)
 
 
-
-
 def trajectory_extractor(dat_ix):
     dat_suffix = ['Osak', 'Glas', 'Edin', 'Toro', 'Melb', 'caliAdv', 'disHolly', 'disland', 'epcot', 'MagicK']
     poi_name = "poi-" + dat_suffix[dat_ix] + ".csv"  # Edin
@@ -243,6 +241,25 @@ def perturb_all_traj(ALL_TRAJ, ALL_TRAJ_ID, ALL_USER, ALL_TRAJ_TIME, poiIDs, cop
     ALL_PERTURBED_USER = []
     ALL_PERTURBED_TIME = []
 
+    if copy_no != 0:
+        for j in range(len(ALL_TRAJ)):
+            curr_traj = ALL_TRAJ[j]
+            curr_traj_time = ALL_TRAJ_TIME[j]
+            curr_user = ALL_USER[j]
+
+            for traj_len in range(3, len(curr_traj)):
+                for idx in range(len(curr_traj) - traj_len + 1):
+                    new_traj = curr_traj[idx:idx + traj_len].copy()
+                    new_traj_time = curr_traj_time[idx:idx + traj_len].copy()
+                    new_user = curr_user
+                    new_trajid = traj_counter + 1
+                    traj_counter += 1
+
+                    ALL_PERTURBED_TRAJ.append(new_traj)
+                    ALL_PERTURBED_TIME.append(new_traj_time)
+                    ALL_PERTURBED_USER.append(new_user)
+                    ALL_PERTURBED_TRAJID.append(new_trajid)
+
     transition_mat, transition_time_mat = poi_transition_matrix(ALL_TRAJ, ALL_TRAJ_TIME, poiIDs)
 
     for j in range(len(ALL_TRAJ)):
@@ -250,10 +267,12 @@ def perturb_all_traj(ALL_TRAJ, ALL_TRAJ_ID, ALL_USER, ALL_TRAJ_TIME, poiIDs, cop
         traj_time = ALL_TRAJ_TIME[j]
         user = ALL_USER[j]
         trajid = ALL_TRAJ_ID[j]
+
         ALL_PERTURBED_TRAJ.append(traj)
         ALL_PERTURBED_TIME.append(traj_time)
         ALL_PERTURBED_USER.append(user)
         ALL_PERTURBED_TRAJID.append(trajid)
+
         for i in range(copy_no):
             perturbed_trajectory, perturbed_trajectory_time = perturb_traj(traj,
                                                                            traj_time,
@@ -269,7 +288,7 @@ def perturb_all_traj(ALL_TRAJ, ALL_TRAJ_ID, ALL_USER, ALL_TRAJ_TIME, poiIDs, cop
     return ALL_PERTURBED_TRAJ, ALL_PERTURBED_TRAJID, ALL_PERTURBED_USER, ALL_PERTURBED_TIME
 
 
-def generate_ds(dat_ix, KFOLD, test_index):
+def generate_ds(dat_ix, KFOLD, test_index, copy_no):
     files = glob.glob('processed_data/*')
     for f in files:
         os.remove(f)
@@ -280,7 +299,7 @@ def generate_ds(dat_ix, KFOLD, test_index):
                                                                 ALL_USER,
                                                                 ALL_TIME,
                                                                 poiIDs,
-                                                                copy_no=0, deviation_limit=0.5)
+                                                                copy_no=copy_no, deviation_limit=0.5)
 
     query_set_dict_traj = {}
     query_set_dict_user = {}
@@ -354,5 +373,3 @@ def generate_ds(dat_ix, KFOLD, test_index):
                 csv_file_writer_.writerow(row)
 
     generate_train_test_data(test_index, KFOLD)
-
-

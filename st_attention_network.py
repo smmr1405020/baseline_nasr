@@ -5,9 +5,15 @@ import torch.utils.data
 import numpy as np
 import data_generator
 
-model_batch_size = 16
-model_lstm_size = 64
-model_location_embedding_size = 64
+np.random.seed(12345)
+torch.manual_seed(12345)
+
+import random
+random.seed(12345)
+
+model_batch_size = 32
+model_lstm_size = 32
+model_location_embedding_size = 32
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 

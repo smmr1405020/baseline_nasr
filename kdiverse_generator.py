@@ -8,6 +8,12 @@ import os
 import csv
 import args_kdiverse
 
+np.random.seed(12345)
+torch.manual_seed(12345)
+
+import random
+random.seed(12345)
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -152,7 +158,7 @@ def generate_result(load_from_file, K, N_min, N_max):
         no_times = len(data_generator.vocab_to_int) - 4
 
         all_traj = get_trajectories(poi_start, poi_end, no_times=no_times, no_beams=4 * K,
-                                    NO_OF_DIVERSE_TRAJECTORIES=K, eligibility_div=0.3, N_min=5, N_max=5)
+                                    NO_OF_DIVERSE_TRAJECTORIES=K, eligibility_div=0.3, N_min=N_min, N_max=N_max)
 
         print("{}/{}".format(count, len(data_generator.query_dict_trajectory_test)))
         count += 1
@@ -203,8 +209,11 @@ def generate_result(load_from_file, K, N_min, N_max):
 
 def write_to_file(dictionary, directory, N_min, N_max, isFreq=False):
     if not isFreq:
-        file_path = os.path.join(directory, str(data_generator.embedding_name)) + "_" + str(
-            args_kdiverse.test_index) + "_" + str(N_min) + "_" + str(N_max) + '.csv'
+        file_path = os.path.join(directory, str(data_generator.embedding_name)) \
+                    + "_index_" + str(args_kdiverse.test_index) \
+                    + "_min_" + str(N_min) \
+                    + "_max_" + str(N_max) \
+                    + "_copy_" + str(args_kdiverse.copy_no) + '.csv'
     else:
         file_path = os.path.join(directory, str(data_generator.embedding_name)) + "_" + str(
             args_kdiverse.test_index) + '_freq.csv'
