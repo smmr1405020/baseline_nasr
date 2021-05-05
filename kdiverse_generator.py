@@ -1,3 +1,5 @@
+import time
+
 import st_attention_network
 import torch
 import numpy as np
@@ -12,6 +14,7 @@ np.random.seed(12345)
 torch.manual_seed(12345)
 
 import random
+
 random.seed(12345)
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -149,7 +152,7 @@ def generate_result(load_from_file, K, N_min, N_max):
     all_gtfreqset = dict()
     all_recset = dict()
 
-    # st = time.time()
+    st = time.time()
     for k, v in data_generator.query_dict_trajectory_test.items():
         str_k = str(k).split("-")
         poi_start = int(str_k[0])
@@ -175,7 +178,7 @@ def generate_result(load_from_file, K, N_min, N_max):
         dict_temp = dict()
         dict_temp[k] = all_traj
         all_recset[k_converted] = list(data_generator.convert_int_to_vocab(dict_temp).values())[0]
-        # print(metric.tot_f1_evaluation(v, data_generator.query_dict_freq_test[k], all_traj))
+        #print(metric.tot_f1_evaluation(v, data_generator.query_dict_freq_test[k], all_traj))
 
         total_score_likability += metric.likability_score_3(v, data_generator.query_dict_freq_test[k], all_traj)
         total_score_curr_f1 += metric.tot_f1_evaluation(v, data_generator.query_dict_freq_test[k], all_traj)
@@ -191,6 +194,9 @@ def generate_result(load_from_file, K, N_min, N_max):
 
         print("Avg. upto now: Likability: " + str(avg_likability) + " F1: " + str(avg_f1) + " PF1: " + str(avg_pf1)
               + " Div: " + str(avg_div))
+
+    end = time.time()
+    print("Time: {}".format((end - st)/count))
 
     print("\n")
     print("Final Score - With K = {}".format(K))
@@ -231,7 +237,6 @@ def write_to_file(dictionary, directory, N_min, N_max, isFreq=False):
             csv_file_writer.writerow(row)
 
     return
-
 
 #     write_distmat_to_file()
 #

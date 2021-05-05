@@ -1,11 +1,25 @@
 import args_kdiverse
+import os
+import glob
 
-args_kdiverse.dat_ix = 3
+if not os.path.exists('model_files'):
+    os.mkdir('model_files')
+else:
+    files = glob.glob('model_files/*')
+    for f in files:
+        os.remove(f)
+
+if not os.path.exists('recset_nasr'):
+    os.mkdir('recset_nasr')
+else:
+    files = glob.glob('recset_nasr/*')
+    for f in files:
+        os.remove(f)
+
+args_kdiverse.dat_ix = 6
 args_kdiverse.FOLD = 5
-args_kdiverse.test_index = 5
-
-N_min = 5
-N_max = 5
+args_kdiverse.test_index = 1
+args_kdiverse.copy_no = 0
 
 from kfold_dataset_generator import generate_ds
 
@@ -13,4 +27,10 @@ generate_ds(args_kdiverse.dat_ix, args_kdiverse.FOLD, args_kdiverse.test_index, 
 
 from kdiverse_generator import generate_result
 
-generate_result(False, K=3, N_min=N_min, N_max=N_max)
+Ns = [(3, 3), (5, 5), (7, 7), (9, 9)]
+
+for Nmn, Nmx in Ns:
+    if Nmn == 3:
+        generate_result(False, K=3, N_min=Nmn, N_max=Nmx)
+    else:
+        generate_result(True, K=3, N_min=Nmn, N_max=Nmx)
