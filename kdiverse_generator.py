@@ -153,6 +153,8 @@ def generate_result(load_from_file, K, N_min, N_max):
     all_recset = dict()
 
     st = time.time()
+    print(data_generator.vocab_to_int)
+
     for k, v in data_generator.query_dict_trajectory_test.items():
         str_k = str(k).split("-")
         poi_start = int(str_k[0])
@@ -178,7 +180,7 @@ def generate_result(load_from_file, K, N_min, N_max):
         dict_temp = dict()
         dict_temp[k] = all_traj
         all_recset[k_converted] = list(data_generator.convert_int_to_vocab(dict_temp).values())[0]
-        #print(metric.tot_f1_evaluation(v, data_generator.query_dict_freq_test[k], all_traj))
+        print(metric.tot_f1_evaluation(v, data_generator.query_dict_freq_test[k], all_traj))
 
         total_score_likability += metric.likability_score_3(v, data_generator.query_dict_freq_test[k], all_traj)
         total_score_curr_f1 += metric.tot_f1_evaluation(v, data_generator.query_dict_freq_test[k], all_traj)
@@ -196,8 +198,9 @@ def generate_result(load_from_file, K, N_min, N_max):
               + " Div: " + str(avg_div))
 
     end = time.time()
+    print(N_max)
+    print(count)
     print("Time: {}".format((end - st)/count))
-
     print("\n")
     print("Final Score - With K = {}".format(K))
     avg_likability = total_score_likability / (count - 1)
